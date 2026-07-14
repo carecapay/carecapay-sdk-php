@@ -72,6 +72,23 @@ final class ClientTest extends TestCase
         $this->assertSame('txn_1', $charge['id']);
     }
 
+    public function testCreateChargeMandaMethodECurrencyQuandoInformados(): void
+    {
+        $this->respond(201, ['id' => 'txn_2', 'status' => 'pending', 'method' => 'pix']);
+
+        $this->client()->charges->create([
+            'amount_cents' => 500,
+            'method' => 'pix',
+            'currency' => 'BRL',
+        ]);
+
+        $request = $this->lastRequest();
+        $this->assertSame(
+            ['amount_cents' => 500, 'method' => 'pix', 'currency' => 'BRL'],
+            json_decode($request['body'], true),
+        );
+    }
+
     public function testGetListESimulate(): void
     {
         $this->respond(200, ['id' => 'txn_9', 'status' => 'paid']);

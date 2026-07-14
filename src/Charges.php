@@ -14,7 +14,10 @@ class Charges
     /**
      * Cria uma cobrança Pix; a resposta traz o qr_code copia e cola.
      *
-     * @param array{amount_cents: int, description?: string} $input
+     * `method` e `currency` são opcionais — hoje só "pix"/"BRL" existem (padrão
+     * se omitidos).
+     *
+     * @param array{amount_cents: int, description?: string, method?: string, currency?: string} $input
      */
     public function create(array $input): array
     {

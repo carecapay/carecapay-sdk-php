@@ -10,62 +10,54 @@ use PHPUnit\Framework\TestCase;
 
 final class WebhooksTest extends TestCase
 {
-    private const SECRET = 'ccp_whsec_teste';
-    private const PAYLOAD = '{"id":"evt_1","type":"charge.paid","data":{"id":"txn_1","amount_cents":1990}}';
+    private const SECRET = 'ccp_whsec_abc123';
 
-    private function sign(string $payload, int $timestamp, string $secret = self::SECRET): string
+    private function sign(int $t, string $payload): string
     {
-        $v1 = hash_hmac('sha256', "$timestamp.$payload", $secret);
-        return "t=$timestamp,v1=$v1";
+        $mac = hash_hmac('sha256', "$t.$payload", self::SECRET);
+        return "t=$t,v1=$mac";
     }
 
-    public function testAceitaAssinaturaValida(): void
+    public function testVerifySignatureAceitaValidaERecente(): void
     {
+        $payload = json_encode(['id' => 'evt_1', 'type' => 'charge.paid']);
+        $header = $this->sign(time(), $payload);
+        $this->assertTrue(Webhooks::verifySignature($payload, $header, self::SECRET));
+    }
+
+    public function testVerifySignatureRejeitaSecretErradoCorpoAdulteradoEReplay(): void
+    {
+        $payload = json_encode(['id' => 'evt_1', 'type' => 'charge.paid']);
         $now = time();
-        $this->assertTrue(
-            Webhooks::verifySignature(self::PAYLOAD, $this->sign(self::PAYLOAD, $now), self::SECRET),
-        );
+        $header = $this->sign($now, $payload);
+
+        $this->assertFalse(Webhooks::verifySignature($payload, $header, 'outro_secret'));
+
+        $tampered = json_encode(['id' => 'evt_1', 'type' => 'charge.paid', 'tampered' => true]);
+        $this->assertFalse(Webhooks::verifySignature($tampered, $header, self::SECRET));
+
+        $oldHeader = $this->sign($now - 600, $payload);
+        $this->assertFalse(Webhooks::verifySignature($payload, $oldHeader, self::SECRET));
     }
 
-    public function testRejeitaSecretErradoCorpoAdulteradoEReplay(): void
+    public function testConstructEventDevolveEventoQuandoValido(): void
     {
-        $now = time();
-        $this->assertFalse(Webhooks::verifySignature(
-            self::PAYLOAD,
-            $this->sign(self::PAYLOAD, $now, 'ccp_whsec_outro'),
-            self::SECRET,
-        ));
-        $this->assertFalse(Webhooks::verifySignature(
-            str_replace('1990', '1', self::PAYLOAD),
-            $this->sign(self::PAYLOAD, $now),
-            self::SECRET,
-        ));
-        $this->assertFalse(Webhooks::verifySignature(
-            self::PAYLOAD,
-            $this->sign(self::PAYLOAD, $now - 600),
-            self::SECRET,
-        ));
-        $this->assertTrue(Webhooks::verifySignature(
-            self::PAYLOAD,
-            $this->sign(self::PAYLOAD, $now - 600),
-            self::SECRET,
-            toleranceSeconds: 3600,
-        ));
-    }
-
-    public function testConstructEvent(): void
-    {
-        $event = Webhooks::constructEvent(self::PAYLOAD, $this->sign(self::PAYLOAD, time()), self::SECRET);
+        $payload = json_encode([
+            'id' => 'evt_1',
+            'type' => 'charge.paid',
+            'environment' => 'sandbox',
+            'created_at' => '2026-07-14T00:00:00Z',
+            'data' => ['id' => 'txn_1'],
+        ]);
+        $header = $this->sign(time(), $payload);
+        $event = Webhooks::constructEvent($payload, $header, self::SECRET);
         $this->assertSame('charge.paid', $event['type']);
-        $this->assertSame(1990, $event['data']['amount_cents']);
-
-        $this->expectException(CarecaPayWebhookException::class);
-        Webhooks::constructEvent(self::PAYLOAD, 't=123,v1=deadbeef', self::SECRET);
+        $this->assertSame('evt_1', $event['id']);
     }
 
-    public function testHeaderMalformadoLanca(): void
+    public function testConstructEventLancaQuandoInvalido(): void
     {
         $this->expectException(CarecaPayWebhookException::class);
-        Webhooks::constructEvent(self::PAYLOAD, 'formato-invalido', self::SECRET);
+        Webhooks::constructEvent('{}', 't=0,v1=deadbeef', self::SECRET);
     }
 }

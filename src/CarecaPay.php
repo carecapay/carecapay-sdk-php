@@ -7,7 +7,7 @@ namespace CarecaPay;
 /**
  * SDK oficial PHP da CarecaPay.
  *
- *     $carecapay = new \CarecaPay\CarecaPay($_ENV['CARECAPAY_PRIVATE_KEY']);
+ *     $carecapay = new \CarecaPay\CarecaPay($_ENV['CARECAPAY_SECRET_KEY']);
  *     $charge = $carecapay->charges->create(['amount_cents' => 1990]);
  *     echo $charge['qr_code']; // copia e cola do Pix
  *

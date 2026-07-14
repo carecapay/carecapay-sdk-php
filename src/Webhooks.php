@@ -5,7 +5,12 @@ declare(strict_types=1);
 namespace CarecaPay;
 
 /**
- * Verificação de webhooks (header X-CarecaPay-Signature).
+ * Verificação de webhooks.
+ *
+ * Cada entrega vem com DOIS mecanismos, use o que preferir:
+ *   - header X-CarecaPay-Token: o segredo cru. Zero código — só comparar.
+ *   - header X-CarecaPay-Signature: HMAC-SHA256 do corpo (esta classe).
+ *     Detecta corpo adulterado e rejeita entregas antigas (anti-replay).
  *
  * Use SEMPRE o corpo CRU da requisição (file_get_contents('php://input')):
  * re-serializar o JSON muda os bytes e invalida o HMAC.

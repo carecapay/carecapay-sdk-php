@@ -1,7 +1,7 @@
 # CarecaPay — SDK PHP
 
 SDK oficial da [CarecaPay](https://carecapay.com.br) para PHP: cobranças Pix,
-saldo e verificação de webhooks. Sem dependências além de `ext-curl`/`ext-json`
+saldo e webhooks. Sem dependências além de `ext-curl`/`ext-json`
 (PHP 8.1+).
 
 ## Instalação
@@ -54,8 +54,13 @@ Os arrays devolvidos têm exatamente os shapes da API REST (snake_case).
 
 ## Webhooks (recomendado)
 
-Configure sua URL no painel (**Webhooks**) e valide cada entrega com o corpo
-**CRU** da requisição (`php://input`):
+Configure sua URL e um segredo no painel (**Webhooks**). Cada entrega vem com
+dois mecanismos de verificação.
+
+### Com o SDK (recomendado): assinatura verificada em 1 chamada
+
+`Webhooks::constructEvent` valida o HMAC (rejeita corpo adulterado e entregas
+antigas) usando o corpo **CRU** da requisição (`php://input`):
 
 ```php
 use CarecaPay\Webhooks;
@@ -73,13 +78,26 @@ try {
 }
 
 if ($event['type'] === 'charge.paid') {
-    liberarPedido($event['data']['id']);  // deduplique pelo $event['id']
+    liberarPedido($event['data']['id']); // deduplique pelo $event['id']
 }
 http_response_code(200);
 ```
 
 `Webhooks::verifySignature($payload, $header, $secret)` devolve só o booleano.
 Entregas com mais de 5 minutos são rejeitadas (`$toleranceSeconds` ajusta).
+
+### Sem SDK / mais simples: comparar o token
+
+Todo POST também traz o segredo cru no header `X-CarecaPay-Token`. É mais
+simples, mas não detecta corpo adulterado nem repetição de entrega, então
+exige HTTPS na sua URL:
+
+```php
+if (($_SERVER['HTTP_X_CARECAPAY_TOKEN'] ?? '') !== $_ENV['CARECAPAY_WEBHOOK_SECRET']) {
+    http_response_code(401);  // não veio da CarecaPay
+    exit;
+}
+```
 
 ## Erros
 

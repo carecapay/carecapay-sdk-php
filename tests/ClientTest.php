@@ -135,8 +135,8 @@ final class ClientTest extends TestCase
     {
         $sandbox = new CarecaPay('ccp_secret_sandbox_x_y');
         $live = new CarecaPay('ccp_secret_live_x_y');
-        $this->assertSame('https://sandbox.carecapay.com.br', $sandbox->baseUrl);
-        $this->assertSame('https://api.carecapay.com.br', $live->baseUrl);
+        $this->assertSame('https://api-sandbox.carecapay.com', $sandbox->baseUrl);
+        $this->assertSame('https://api.carecapay.com', $live->baseUrl);
     }
 
     public function testChaveInvalidaRejeitadaNaConstrucao(): void

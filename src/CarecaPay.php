@@ -19,8 +19,8 @@ class CarecaPay
     public const VERSION = '0.1.0';
 
     private const BASE_URLS = [
-        'sandbox' => 'https://sandbox.carecapay.com.br',
-        'live' => 'https://api.carecapay.com.br',
+        'sandbox' => 'https://api-sandbox.carecapay.com',
+        'live' => 'https://api.carecapay.com',
     ];
 
     public readonly string $baseUrl;

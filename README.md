@@ -1,6 +1,6 @@
 # CarecaPay — SDK PHP
 
-SDK oficial da [CarecaPay](https://carecapay.com.br) para PHP: cobranças Pix,
+SDK oficial da [CarecaPay](https://carecapay.com) para PHP: cobranças Pix,
 saldo e webhooks. Sem dependências além de `ext-curl`/`ext-json`
 (PHP 8.1+).
 

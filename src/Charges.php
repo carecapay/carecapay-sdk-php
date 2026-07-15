@@ -12,12 +12,14 @@ class Charges
     }
 
     /**
-     * Cria uma cobrança Pix; a resposta traz o qr_code copia e cola.
+     * Cria uma cobrança Pix; a resposta traz o qr_code copia e cola e o
+     * qr_code_base64 (PNG já renderizado, pronto pra exibir).
      *
      * `method` e `currency` são opcionais — hoje só "pix"/"BRL" existem (padrão
-     * se omitidos).
+     * se omitidos). `external_reference` é o seu id do pedido: a CarecaPay só
+     * guarda e devolve de volta (aqui, no get/list e no webhook), não interpreta.
      *
-     * @param array{amount_cents: int, description?: string, method?: string, currency?: string} $input
+     * @param array{amount_cents: int, description?: string, method?: string, currency?: string, external_reference?: string} $input
      */
     public function create(array $input): array
     {

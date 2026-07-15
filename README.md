@@ -37,10 +37,12 @@ $carecapay = new CarecaPay($key, ['base_url' => 'http://localhost:8080']);
 
 ```php
 $charge = $carecapay->charges->create([
-    'amount_cents' => 1990,          // R$ 19,90 — sempre em centavos, obrigatório
-    'description' => 'Assinatura',   // opcional
+    'amount_cents' => 1990,             // R$ 19,90 — sempre em centavos, obrigatório
+    'description' => 'Assinatura',      // opcional
+    'external_reference' => 'order_42', // opcional — seu id do pedido, só guardamos e devolvemos
 ]);
 echo $charge['qr_code'];             // copia e cola do Pix
+echo $charge['qr_code_base64'];      // PNG já renderizado (base64), pronto pra exibir
 
 $carecapay->charges->get('txn_...');
 $carecapay->charges->list(['status' => 'paid', 'limit' => 10]);

@@ -7,7 +7,7 @@ saldo e webhooks. Sem dependências além de `ext-curl`/`ext-json`
 ## Instalação
 
 ```bash
-composer require carecapay/carecapay
+composer require carecapay/sdk-php
 ```
 
 > **Beta**: enquanto o pacote não está no Packagist, aponte um repositório

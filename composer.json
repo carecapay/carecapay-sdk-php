@@ -1,5 +1,5 @@
 {
-    "name": "carecapay/carecapay",
+    "name": "carecapay/sdk-php",
     "description": "SDK oficial PHP da CarecaPay — cobranças Pix, saldo e verificação de webhooks.",
     "type": "library",
     "license": "MIT",
@@ -8,6 +8,19 @@
         "ext-curl": "*",
         "ext-json": "*"
     },
+    "keywords": [
+        "carecapay",
+        "pix",
+        "pagamentos",
+        "gateway",
+        "sdk"
+    ],
+    "homepage": "https://carecapay.com",
+    "authors": [
+        {
+            "name": "CarecaPay"
+        }
+    ],
     "require-dev": {
         "phpunit/phpunit": "^11.0"
     },

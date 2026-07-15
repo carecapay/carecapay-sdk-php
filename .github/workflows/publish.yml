@@ -1,0 +1,53 @@
+name: Publish PHP SDK
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Regenerate optimized autoload
+        run: composer dump-autoload --optimize --strict-psr
+
+      - name: Run tests
+        run: composer test
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Update package on Packagist
+        env:
+          PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
+          PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+        run: |
+          curl --fail-with-body \
+            --request POST \
+            --header "Content-Type: application/json" \
+            --user "${PACKAGIST_USERNAME}:${PACKAGIST_TOKEN}" \
+            --data '{"repository":"https://github.com/carecapay/carecapay-sdk-php"}' \
+            https://packagist.org/api/update-package

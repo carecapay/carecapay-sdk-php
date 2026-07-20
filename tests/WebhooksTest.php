@@ -45,7 +45,6 @@ final class WebhooksTest extends TestCase
         $payload = json_encode([
             'id' => 'evt_1',
             'type' => 'charge.paid',
-            'environment' => 'sandbox',
             'created_at' => '2026-07-14T00:00:00Z',
             'data' => ['id' => 'txn_1'],
         ]);

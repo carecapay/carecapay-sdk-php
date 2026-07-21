@@ -53,15 +53,22 @@ jobs:
     steps:
       - name: Publish version on Packagist
         env:
-            PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
-            PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
+          PACKAGIST_USERNAME: ${{ secrets.PACKAGIST_USERNAME }}
+          PACKAGIST_TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
         run: |
-            curl --fail-with-body \
+          if [ -z "$PACKAGIST_USERNAME" ]; then
+            echo "::error::PACKAGIST_USERNAME não configurado"
+            exit 1
+          fi
+
+          if [ -z "$PACKAGIST_TOKEN" ]; then
+            echo "::error::PACKAGIST_TOKEN não configurado"
+            exit 1
+          fi
+
+          curl --fail-with-body \
             --request POST \
             --header "Content-Type: application/json" \
-            --data "{
-                \"repository\": \"https://github.com/carecapay/carecapay-sdk-php\",
-                \"username\": \"${PACKAGIST_USERNAME}\",
-                \"apiToken\": \"${PACKAGIST_TOKEN}\"
-            }" \
-            https://packagist.org/api/update-package
+            --header "Authorization: Bearer ${PACKAGIST_USERNAME}:${PACKAGIST_TOKEN}" \
+            --data '{"repository":"https://github.com/carecapay/carecapay-sdk-php"}' \
+            "https://packagist.org/api/update-package"
